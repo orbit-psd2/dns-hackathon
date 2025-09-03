@@ -8,6 +8,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 import { TransactionProvider } from "@/contexts/TransactionContext";
+import { WalletProvider } from "@/contexts/WalletContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
@@ -35,7 +36,8 @@ const App = () => (
               <AuthProvider>
           <NotificationProvider>
             <TransactionProvider>
-              <TooltipProvider>
+              <WalletProvider>
+                <TooltipProvider>
             <Toaster />
             <Sonner />
             <BrowserRouter>
@@ -89,6 +91,7 @@ const App = () => (
             <Footer />
           </BrowserRouter>
                       </TooltipProvider>
+                </WalletProvider>
             </TransactionProvider>
           </NotificationProvider>
         </AuthProvider>

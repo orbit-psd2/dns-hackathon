@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { mockWalletTransactions, WalletTransaction, USDT_TO_INR_RATE } from '@/data/mockData';
+import { WalletTransaction } from '@/data/mockData';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,17 +8,29 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Wallet, ArrowRightLeft, Send, History, CheckCircle, Clock, Copy, ExternalLink } from 'lucide-react';
+import { Wallet, ArrowRightLeft, Send, History, CheckCircle, Clock, Copy, ExternalLink, Settings } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useWallet } from '@/contexts/WalletContext';
 
 const CryptoWallet: React.FC = () => {
   const [walletAddress, setWalletAddress] = useState('');
   const [amountUsdt, setAmountUsdt] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [transactions, setTransactions] = useState<WalletTransaction[]>(mockWalletTransactions);
+  const [showSettings, setShowSettings] = useState(false);
   const { toast } = useToast();
+  
+  const {
+    initialUsdtBalance,
+    conversionRate,
+    setInitialUsdtBalance,
+    setConversionRate,
+    transactions,
+    addTransaction,
+    totalUsdt,
+    totalInr
+  } = useWallet();
 
-  const amountInr = parseFloat(amountUsdt) * USDT_TO_INR_RATE || 0;
+  const amountInr = parseFloat(amountUsdt) * parseFloat(conversionRate) || 0;
 
   const handleSendToInrWallet = async () => {
     if (!walletAddress || !amountUsdt) {
@@ -46,7 +58,7 @@ const CryptoWallet: React.FC = () => {
       createdAt: new Date().toISOString(),
     };
 
-    setTransactions(prev => [newTransaction, ...prev]);
+    addTransaction(newTransaction);
     setIsProcessing(false);
 
     toast({
@@ -100,11 +112,10 @@ const CryptoWallet: React.FC = () => {
     );
   };
 
-  const totalUsdt = transactions.reduce((sum, tx) => sum + tx.amountUsdt, 0);
-  const totalInr = transactions.reduce((sum, tx) => sum + tx.amountInr, 0);
+
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 pt-24 md:pt-28 p-6">
       <div className="max-w-6xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -112,11 +123,85 @@ const CryptoWallet: React.FC = () => {
           transition={{ duration: 0.5 }}
           className="mb-8"
         >
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Crypto Wallet</h1>
-          <p className="text-gray-600">
-            Manage your cryptocurrency assets and convert USDT to INR
-          </p>
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Crypto Wallet</h1>
+              <p className="text-gray-600">
+                Manage your cryptocurrency assets and convert USDT to INR
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowSettings(!showSettings)}
+              className="flex items-center space-x-2"
+            >
+              <Settings className="h-4 w-4" />
+              <span>Settings</span>
+            </Button>
+          </div>
         </motion.div>
+
+        {/* Settings Card */}
+        {showSettings && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+            className="mb-6"
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Settings className="h-5 w-5 text-blue-600" />
+                  <span>Wallet Settings</span>
+                </CardTitle>
+                <CardDescription>
+                  Configure your initial balance and conversion rate
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="initialBalance">Initial USDT Balance</Label>
+                    <Input
+                      id="initialBalance"
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      value={initialUsdtBalance}
+                      onChange={(e) => setInitialUsdtBalance(e.target.value)}
+                    />
+                    <p className="text-sm text-gray-600">
+                      Enter your current USDT wallet balance
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="conversionRate">USDT to INR Rate</Label>
+                    <Input
+                      id="conversionRate"
+                      type="number"
+                      step="0.01"
+                      placeholder="83.00"
+                      value={conversionRate}
+                      onChange={(e) => setConversionRate(e.target.value)}
+                    />
+                    <p className="text-sm text-gray-600">
+                      Current conversion rate (1 USDT = ₹{conversionRate})
+                    </p>
+                  </div>
+                </div>
+                <Button 
+                  onClick={() => setShowSettings(false)}
+                  className="w-full"
+                >
+                  Save Settings
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
 
         {/* Wallet Overview */}
         <motion.div
@@ -137,7 +222,7 @@ const CryptoWallet: React.FC = () => {
                 {totalUsdt.toFixed(2)} USDT
               </div>
               <p className="text-sm text-gray-600">
-                Current conversion rate: 1 USDT = ₹{USDT_TO_INR_RATE}
+                Current conversion rate: 1 USDT = ₹{conversionRate}
               </p>
             </CardContent>
           </Card>
@@ -225,7 +310,7 @@ const CryptoWallet: React.FC = () => {
                     />
                     {amountUsdt && (
                       <p className="text-sm text-gray-600">
-                        ≈ ₹{amountInr.toLocaleString()} (Rate: 1 USDT = ₹{USDT_TO_INR_RATE})
+                        ≈ ₹{amountInr.toLocaleString()} (Rate: 1 USDT = ₹{conversionRate})
                       </p>
                     )}
                   </div>
@@ -245,7 +330,7 @@ const CryptoWallet: React.FC = () => {
                           </div>
                           <div className="flex justify-between">
                             <span>Conversion Rate:</span>
-                            <span className="font-medium">1 USDT = ₹{USDT_TO_INR_RATE}</span>
+                            <span className="font-medium">1 USDT = ₹{conversionRate}</span>
                           </div>
                         </div>
                       </AlertDescription>
