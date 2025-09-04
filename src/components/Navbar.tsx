@@ -61,9 +61,9 @@ const Navbar = () => {
       initial={{ y: -100 }}
       animate={{ 
         y: visible ? 0 : -100,
-        backgroundColor: isScrolled ? "rgba(0, 0, 0, 0.7)" : "transparent",
-        backdropFilter: isScrolled ? "blur(12px)" : "blur(0px)",
-        boxShadow: isScrolled ? "0 4px 30px rgba(0, 0, 0, 0.1)" : "none",
+        backgroundColor: isScrolled ? "rgba(0, 0, 0, 0.9)" : "rgba(255, 255, 255, 0.9)",
+        backdropFilter: isScrolled ? "blur(12px)" : "blur(8px)",
+        boxShadow: isScrolled ? "0 4px 30px rgba(0, 0, 0, 0.3)" : "0 2px 20px rgba(0, 0, 0, 0.1)",
       }}
       transition={{ 
         duration: 0.3,
@@ -80,11 +80,12 @@ const Navbar = () => {
           <motion.div
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            className="drop-shadow-lg"
           >
             <motion.img
               src="https://imgur.com/pIqbQ8g.png"
               alt="Dreamnity logo"
-              className="w-11 md:w-11 h-auto"
+              className="w-11 md:w-11 h-auto filter drop-shadow-md"
               whileHover={{ rotate: [0, -5, 5, 0] }}
               transition={{ duration: 0.5 }}
             />
@@ -97,7 +98,11 @@ const Navbar = () => {
             <Link
               key={link.path}
               to={link.path}
-              className="text-sm font-medium text-brand hover:text-black relative transition-all duration-300 hover:scale-110"
+              className={`text-sm font-medium relative transition-all duration-300 hover:scale-110 ${
+                isScrolled 
+                  ? 'text-white hover:text-blue-300' 
+                  : 'text-brand hover:text-brand-dark'
+              }`}
             >
               <motion.div
                 initial={{ opacity: 0, y: -20 }}
@@ -107,7 +112,9 @@ const Navbar = () => {
               >
                 {link.name}
                 <motion.div 
-                  className={`absolute -bottom-1 left-0 h-0.5 bg-black rounded-full ${
+                  className={`absolute -bottom-1 left-0 h-0.5 rounded-full ${
+                    isScrolled ? 'bg-white' : 'bg-brand'
+                  } ${
                     location.pathname === link.path ? "w-full" : "w-0"
                   }`}
                   initial={false}
@@ -121,15 +128,23 @@ const Navbar = () => {
           
           {isAuthenticated ? (
             <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 text-brand hover:text-black transition-all duration-300 hover:scale-110">
+              <div className={`flex items-center space-x-2 transition-all duration-300 hover:scale-110 ${
+                isScrolled 
+                  ? 'text-white hover:text-blue-300' 
+                  : 'text-brand hover:text-brand-dark'
+              }`}>
                 <User className="h-4 w-4" />
-                <span className="text-sm">{user?.name}</span>
+                <span className="text-sm font-medium">{user?.name}</span>
               </div>
               <Button 
                 onClick={logout}
                 variant="outline"
                 size="sm"
-                className="border-brand text-brand hover:bg-black hover:text-white hover:border-black transition-all duration-300 hover:scale-110"
+                className={`transition-all duration-300 hover:scale-110 font-medium ${
+                  isScrolled 
+                    ? 'bg-brand text-white' 
+                    : 'border-brand text-brand hover:bg-brand hover:text-white'
+                }`}
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout
@@ -144,7 +159,11 @@ const Navbar = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Button className="bg-brand hover:bg-black transition-all duration-300 hover:shadow-lg hover:shadow-black/20 hover:scale-110">
+                <Button className={`transition-all duration-300 hover:shadow-lg hover:scale-110 font-medium ${
+                  isScrolled 
+                    ? 'bg-brand hover:bg-brand-dark text-white' 
+                    : 'bg-brand hover:bg-brand-dark text-white'
+                }`}>
                   Get Started
                 </Button>
               </motion.div>
@@ -154,7 +173,11 @@ const Navbar = () => {
 
         {/* Mobile Menu Button */}
         <motion.button
-            className="md:hidden p-2 rounded-full hover:bg-hover-gray"
+            className={`md:hidden p-2 rounded-full transition-colors duration-200 ${
+              isScrolled 
+                ? 'hover:bg-white/10' 
+                : 'hover:bg-brand/10'
+            }`}
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Toggle menu"
             whileTap={{ scale: 0.9 }}
@@ -166,7 +189,9 @@ const Navbar = () => {
                   y: isMenuOpen ? 0 : -8,
                 }}
                 transition={{ duration: 0.3 }}
-                className="absolute w-full h-0.5 rounded bg-white origin-center"
+                className={`absolute w-full h-0.5 rounded origin-center ${
+                  isScrolled ? 'bg-white' : 'bg-brand'
+                }`}
               />
               <motion.span
                 animate={{
@@ -174,7 +199,9 @@ const Navbar = () => {
                   scale: isMenuOpen ? 0 : 1,
                 }}
                 transition={{ duration: 0.3 }}
-                className="absolute w-full h-0.5 rounded bg-white"
+                className={`absolute w-full h-0.5 rounded ${
+                  isScrolled ? 'bg-white' : 'bg-brand'
+                }`}
               />
               <motion.span
                 animate={{
@@ -182,7 +209,9 @@ const Navbar = () => {
                   y: isMenuOpen ? 0 : 8,
                 }}
                 transition={{ duration: 0.3 }}
-                className="absolute w-full h-0.5 rounded bg-white origin-center"
+                className={`absolute w-full h-0.5 rounded origin-center ${
+                  isScrolled ? 'bg-white' : 'bg-brand'
+                }`}
               />
             </div>
           </motion.button>
@@ -192,7 +221,7 @@ const Navbar = () => {
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div 
-            className="md:hidden absolute top-full left-0 w-full bg-black backdrop-blur-lg overflow-hidden"
+            className="md:hidden absolute top-full left-0 w-full bg-black/98 backdrop-blur-lg overflow-hidden shadow-2xl"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "100vh", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -204,10 +233,10 @@ const Navbar = () => {
                   <Link
                     key={link.path}
                     to={link.path}
-                    className={`px-4 py-3 text-sm font-medium rounded-lg ${
+                    className={`px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
                       location.pathname === link.path 
-                        ? "text-white bg-white/10" 
-                        : "text-white/80 hover:text-white"
+                        ? "text-white bg-white/25 border border-white/40 shadow-lg" 
+                        : "text-white/90 hover:text-white hover:bg-white/15 hover:shadow-md"
                     }`}
                   >
                     <motion.div
@@ -235,7 +264,7 @@ const Navbar = () => {
                     <Button 
                       onClick={logout}
                       variant="outline"
-                      className="border-white text-white hover:bg-white hover:text-black w-full"
+                      className="border-white text-white hover:bg-white hover:text-black w-full transition-colors duration-200"
                     >
                       <LogOut className="h-4 w-4 mr-2" />
                       Logout
@@ -249,7 +278,7 @@ const Navbar = () => {
                       transition={{ delay: 0.4 }}
                       whileTap={{ scale: 0.95 }}
                     >
-                      <Button className="bg-brand hover:bg-brand-dark w-full">
+                      <Button className="bg-brand hover:bg-brand-dark w-full text-white transition-colors duration-200">
                         Get Started
                       </Button>
                     </motion.div>
